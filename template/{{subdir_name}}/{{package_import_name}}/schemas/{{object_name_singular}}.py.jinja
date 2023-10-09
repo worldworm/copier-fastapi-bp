@@ -1,0 +1,22 @@
+"""{{ object_name_singular | capitalize }} schemas."""
+from typing import Optional
+
+from pydantic import BaseModel, EmailStr, Field
+
+class {{ object_name_singular | capitalize }}Base(BaseModel):
+    """BaseModel {{ object_name_singular | capitalize }} class."""
+    name: str = Field(examples=["Example name"])
+    description: Optional[str] = Field(default=None, examples=["Example description"])
+    email: EmailStr = Field(examples=["test@example.com"])
+
+class {{ object_name_singular | capitalize }}Create({{ object_name_singular | capitalize }}Base):
+    """Create {{ object_name_singular | capitalize }} class."""
+    pass
+
+class {{ object_name_singular | capitalize }}Update({{ object_name_singular | capitalize }}Base):
+    """Update {{ object_name_singular | capitalize }} class."""
+    pass
+
+class {{ object_name_singular | capitalize }}({{ object_name_singular | capitalize }}Base):
+    """{{ object_name_singular | capitalize }} class."""
+    id: int = Field(examples=[1])

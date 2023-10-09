@@ -1,0 +1,6 @@
+"""Main API routers."""
+from fastapi import APIRouter
+from .endpoints.{{ object_name_plural }} import router as {{ object_name_plural }}_router
+
+router = APIRouter()
+router.include_router({{ object_name_plural }}_router)

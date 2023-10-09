@@ -1,0 +1,26 @@
+_subdirectory: template
+_templates_suffix: .jinja
+
+use_subdir:
+  type: bool
+  help: Use subdir for project files?
+  default: false
+
+subdir_name:
+  type: str
+  help: Subdir name
+  default: "{{ 'backend' if use_subdir else '.' ~ sep }}"
+  when: "{{ use_subdir }}"
+
+package_import_name:
+  type: str
+  help: Package import name (for `import NAME` in Python code)
+
+object_name_singular:
+  type: str
+  help: REST object name (singular)
+
+object_name_plural:
+  type: str
+  help: REST object name (plural)
+  default: "{{ object_name_singular + 's' }}"
