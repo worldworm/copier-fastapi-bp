@@ -1,3 +1,4 @@
+"""{{ object_name_plural | capitalize }} API endpoints."""
 from fastapi import APIRouter, HTTPException, status, Response, Query
 
 from ...schemas.{{ object_name_singular }} import {{ object_name_singular | capitalize }}, {{ object_name_singular | capitalize }}Create, {{ object_name_singular | capitalize }}Update
@@ -7,44 +8,41 @@ from ...schemas import responses
 router = APIRouter(prefix="/{{ object_name_plural }}", tags=["{{ object_name_singular | capitalize }}"])
 
 
-@router.get("/",
-            responses={status.HTTP_200_OK: {"model": list[{{ object_name_singular | capitalize }}], "description": "List of {{ object_name_plural }}.", "headers": responses.header_total_count}})
-async def get_{{ object_name_plural }}(response: Response, page: int = Query(default=0, ge=0), limit: int = Query(default=100, gt=0)) -> list[{{ object_name_singular | capitalize }}]:
+@router.get("/", responses={status.HTTP_200_OK: {"model": list[{{ object_name_singular | capitalize }}],
+                                                 "description": "List of {{ object_name_plural }}.", "headers": responses.header_total_count}})
+async def get_{{ object_name_plural }}(response: Response, 
+                        page: int = Query(default=0, ge=0), limit: int = Query(default=100, gt=0)) -> list[{{ object_name_singular | capitalize }}]:
     """Get all {{ object_name_plural }}."""
     # response.headers["X-Total-Count"] = "0"
     pass
 
 
-@router.post("/",
-             status_code=status.HTTP_201_CREATED,
-             responses={**responses.http_409_already_exists})
+@router.post("/", status_code=status.HTTP_201_CREATED,
+                  responses={**responses.http_409_already_exists})
 async def create_{{ object_name_singular }}({{ object_name_singular }}: {{ object_name_singular | capitalize }}Create) -> {{ object_name_singular | capitalize }}:
     """Create a new {{ object_name_singular }}."""
     # raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="{{ object_name_singular | capitalize }} already exists.")
     pass
 
 
-@router.get("/{id}",
-            responses={**responses.http_404_not_found})
-async def get_{{ object_name_singular }}(id: int) -> {{ object_name_singular | capitalize }}:
+@router.get("/{{ "{" ~ object_name_singular }}_id}", responses={**responses.http_404_not_found})
+async def get_{{ object_name_singular }}({{ object_name_singular }}_id: int) -> {{ object_name_singular | capitalize }}:
     """Get a {{ object_name_singular }}."""
     # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="{{ object_name_singular | capitalize }} not found.")
     pass
 
 
-@router.put("/{id}",
-            status_code=status.HTTP_200_OK,
-            responses={**responses.http_404_not_found})
-async def update_{{ object_name_singular }}(id: int, {{ object_name_singular }}: {{ object_name_singular | capitalize }}Update) -> {{ object_name_singular | capitalize }}:
+@router.put("/{{ "{" ~ object_name_singular }}_id}", status_code=status.HTTP_200_OK,
+                     responses={**responses.http_404_not_found})
+async def update_{{ object_name_singular }}({{ object_name_singular }}_id: int, {{ object_name_singular }}: {{ object_name_singular | capitalize }}Update) -> {{ object_name_singular | capitalize }}:
     """Update a {{ object_name_singular }}."""
     # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="{{ object_name_singular | capitalize }} not found.")
     pass
 
 
-@router.delete("/{id}",
-               status_code=status.HTTP_204_NO_CONTENT,
-               responses={**responses.http_404_not_found})
-async def delete_{{ object_name_singular }}(id: int) -> None:
+@router.delete("/{{ "{" ~ object_name_singular }}_id}", status_code=status.HTTP_204_NO_CONTENT,
+                        responses={**responses.http_404_not_found})
+async def delete_{{ object_name_singular }}({{ object_name_singular }}_id: int) -> None:
     """Delete a {{ object_name_singular }}."""
     # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="{{ object_name_singular | capitalize }} not found.")
     return status.HTTP_204_NO_CONTENT
