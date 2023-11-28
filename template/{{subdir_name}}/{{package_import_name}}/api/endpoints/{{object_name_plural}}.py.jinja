@@ -1,9 +1,8 @@
 """{{ object_name_plural | capitalize }} API endpoints."""
-from fastapi import APIRouter, HTTPException, status, Response, Query
+from fastapi import APIRouter, HTTPException, Query, Response, status
 
-from ...schemas.{{ object_name_singular }} import {{ object_name_singular | capitalize }}, {{ object_name_singular | capitalize }}Create, {{ object_name_singular | capitalize }}Update
 from ...schemas import responses
-
+from ...schemas.{{ object_name_singular }} import {{ object_name_singular | capitalize }}, {{ object_name_singular | capitalize }}Create, {{ object_name_singular | capitalize }}Update
 
 router = APIRouter(prefix="/{{ object_name_plural }}", tags=["{{ object_name_singular | capitalize }}"])
 
@@ -18,7 +17,7 @@ async def get_{{ object_name_plural }}(response: Response,
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED,
-                  responses={**responses.http_409_already_exists})
+             responses={**responses.http_409_already_exists})
 async def create_{{ object_name_singular }}({{ object_name_singular }}: {{ object_name_singular | capitalize }}Create) -> {{ object_name_singular | capitalize }}:
     """Create a new {{ object_name_singular }}."""
     # raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="{{ object_name_singular | capitalize }} already exists.")
@@ -33,7 +32,7 @@ async def get_{{ object_name_singular }}({{ object_name_singular }}_id: int) -> 
 
 
 @router.put("/{{ "{" ~ object_name_singular }}_id}", status_code=status.HTTP_200_OK,
-                     responses={**responses.http_404_not_found})
+            responses={**responses.http_404_not_found})
 async def update_{{ object_name_singular }}({{ object_name_singular }}_id: int, {{ object_name_singular }}: {{ object_name_singular | capitalize }}Update) -> {{ object_name_singular | capitalize }}:
     """Update a {{ object_name_singular }}."""
     # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="{{ object_name_singular | capitalize }} not found.")
@@ -41,7 +40,7 @@ async def update_{{ object_name_singular }}({{ object_name_singular }}_id: int, 
 
 
 @router.delete("/{{ "{" ~ object_name_singular }}_id}", status_code=status.HTTP_204_NO_CONTENT,
-                        responses={**responses.http_404_not_found})
+               responses={**responses.http_404_not_found})
 async def delete_{{ object_name_singular }}({{ object_name_singular }}_id: int) -> None:
     """Delete a {{ object_name_singular }}."""
     # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="{{ object_name_singular | capitalize }} not found.")
