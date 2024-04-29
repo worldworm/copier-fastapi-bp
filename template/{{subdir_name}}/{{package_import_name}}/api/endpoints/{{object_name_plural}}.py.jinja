@@ -1,8 +1,8 @@
 """{{ object_name_plural | capitalize }} API endpoints."""
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
-from ...schemas import responses
-from ...schemas.{{ object_name_singular }} import {{ object_name_singular | capitalize }}, {{ object_name_singular | capitalize }}Create, {{ object_name_singular | capitalize }}Update
+from ...models import responses
+from ...models.{{ object_name_singular }} import {{ object_name_singular | capitalize }}, {{ object_name_singular | capitalize }}Create, {{ object_name_singular | capitalize }}Update
 
 router = APIRouter(prefix="/{{ object_name_plural }}", tags=["{{ object_name_singular | capitalize }}"])
 
