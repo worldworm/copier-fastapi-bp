@@ -1,0 +1,27 @@
+"""{{ object_name_singular | capitalize }} models."""
+from typing import Optional
+{% if add_example_model %}
+from pydantic import EmailStr
+{% endif -%}
+from sqlmodel import {% if add_example_model %}AutoString, {% endif %}Field, SQLModel
+
+
+class {{ object_name_singular | capitalize }}Base(SQLModel):
+    """BaseModel {{ object_name_singular | capitalize }} class."""
+    {% if add_example_model -%}
+    name: str = Field(schema_extra={"examples": ["Example name"]})
+    description: Optional[str] = Field(default=None, schema_extra={"examples": ["Example description"]})
+    email: EmailStr = Field(sa_type=AutoString, unique=True, schema_extra={"examples": ["test@example.com"]})
+{% endif %}
+
+class {{ object_name_singular | capitalize }}Create({{ object_name_singular | capitalize }}Base):
+    """Create {{ object_name_singular | capitalize }} class."""
+
+
+class {{ object_name_singular | capitalize }}Update({{ object_name_singular | capitalize }}Base):
+    """Update {{ object_name_singular | capitalize }} class."""
+
+
+class {{ object_name_singular | capitalize }}({{ object_name_singular | capitalize }}Base, table=True):
+    """{{ object_name_singular | capitalize }} class."""
+    id: Optional[int] = Field(default=None, primary_key=True, schema_extra={"examples": ["1"]})

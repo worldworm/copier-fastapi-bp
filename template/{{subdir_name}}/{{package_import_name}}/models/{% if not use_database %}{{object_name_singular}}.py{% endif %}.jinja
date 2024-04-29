@@ -1,15 +1,16 @@
 """{{ object_name_singular | capitalize }} models."""
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, {% if add_example_model %}EmailStr, {% endif %}Field
 
 
 class {{ object_name_singular | capitalize }}Base(BaseModel):
     """BaseModel {{ object_name_singular | capitalize }} class."""
+    {% if add_example_model -%}
     name: str = Field(examples=["Example name"])
     description: Optional[str] = Field(default=None, examples=["Example description"])
     email: EmailStr = Field(examples=["test@example.com"])
-
+{% endif %}
 
 class {{ object_name_singular | capitalize }}Create({{ object_name_singular | capitalize }}Base):
     """Create {{ object_name_singular | capitalize }} class."""
@@ -21,4 +22,4 @@ class {{ object_name_singular | capitalize }}Update({{ object_name_singular | ca
 
 class {{ object_name_singular | capitalize }}({{ object_name_singular | capitalize }}Base):
     """{{ object_name_singular | capitalize }} class."""
-    id: int = Field(examples=[1])
+    id: Optional[int] = Field(examples=[1])

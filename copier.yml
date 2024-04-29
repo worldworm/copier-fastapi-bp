@@ -24,3 +24,12 @@ object_name_plural:
   type: str
   help: REST object name (plural)
   default: "{{ object_name_singular + 's' }}"
+
+use_database:
+  type: bool
+  help: Use database?
+  default: false
+
+add_example_model:
+  type: bool
+  help: Add example model?

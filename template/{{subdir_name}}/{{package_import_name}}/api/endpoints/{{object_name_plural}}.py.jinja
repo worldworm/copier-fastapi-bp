@@ -9,7 +9,7 @@ router = APIRouter(prefix="/{{ object_name_plural }}", tags=["{{ object_name_sin
 
 @router.get("/", responses={status.HTTP_200_OK: {"model": list[{{ object_name_singular | capitalize }}],
                                                  "description": "List of {{ object_name_plural }}.", "headers": responses.header_total_count}})
-async def get_{{ object_name_plural }}(response: Response, 
+async def get_{{ object_name_plural }}(response: Response,
                         page: int = Query(default=0, ge=0), limit: int = Query(default=100, gt=0)) -> list[{{ object_name_singular | capitalize }}]:
     """Get all {{ object_name_plural }}."""
     # response.headers["X-Total-Count"] = "0"
