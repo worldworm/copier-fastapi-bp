@@ -1,49 +1,93 @@
 """{{ object_name_plural | capitalize }} API endpoints."""
+{% if use_database -%}
+from sqlalchemy import exc as sqlalchemy_exceptions
+from sqlmodel import func, select
+from ...database import SessionDep
+{% endif -%}
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from ...models import responses
-from ...models.{{ object_name_singular }} import {{ object_name_singular | capitalize }}, {{ object_name_singular | capitalize }}Create, {{ object_name_singular | capitalize }}Public, {{ object_name_singular | capitalize }}Update
+from ...models.{{ object_name_singular }} import {{ object_name_singular | capitalize }}, {{ object_name_singular | capitalize }}Create, {{ object_name_singular | capitalize }}Public, {{ object_name_plural | capitalize }}Public, {{ object_name_singular | capitalize }}Update
 
 router = APIRouter(prefix="/{{ object_name_plural }}", tags=["{{ object_name_singular | capitalize }}"])
 
 
-@router.get("/", response_model=list[{{ object_name_singular | capitalize }}Public],
-            responses={status.HTTP_200_OK: {"model": list[{{ object_name_singular | capitalize }}Public],
+@router.get("/", response_model={{ object_name_plural | capitalize }}Public,
+            responses={status.HTTP_200_OK: {"model": {{ object_name_plural | capitalize }}Public,
                                             "description": "List of {{ object_name_plural }}.", "headers": responses.header_total_count}})
-async def get_{{ object_name_plural }}(response: Response,
-                        page: int = Query(default=0, ge=0), limit: int = Query(default=100, gt=0)) -> list[{{ object_name_singular | capitalize }}]:
+def get_{{ object_name_plural }}({% if use_database %}session: SessionDep, {% endif %}response: Response,
+                        page: int = Query(default=0, ge=0), limit: int = Query(default=100, gt=0)) -> {{ object_name_plural | capitalize }}Public:
     """Get all {{ object_name_plural }}."""
+    {% if use_database -%}
+    count = session.exec(select(func.count()).select_from({{ object_name_singular | capitalize }})).one()  # pylint: disable=not-callable
+    response.headers["X-Total-Count"] = str(count)
+    {{ object_name_plural }} = session.exec(select({{ object_name_singular | capitalize }})).all()
+    return {{ object_name_plural | capitalize }}Public(data={{ object_name_plural }})
+    {% else -%}
     # response.headers["X-Total-Count"] = "0"
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Route no implemented.")
+    {% endif %}
 
-
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model={{ object_name_singular | capitalize }}Public,
-             responses={**responses.http_409_already_exists})
-async def create_{{ object_name_singular }}({{ object_name_singular }}: {{ object_name_singular | capitalize }}Create) -> {{ object_name_singular | capitalize }}:
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model={{ object_name_singular | capitalize }}Public, responses={**responses.http_409_already_exists})
+def create_{{ object_name_singular }}({% if use_database %}session: SessionDep, {% endif %}{{ object_name_singular }}_in: {{ object_name_singular | capitalize }}Create) -> {{ object_name_singular | capitalize }}:
     """Create a new {{ object_name_singular }}."""
+    {% if use_database -%}
+    {{ object_name_singular }}_existing = session.exec(select({{ object_name_singular | capitalize }}).where({{ object_name_singular | capitalize }}.CHANGEME == {{ object_name_singular }}_in.CHANGEME)).first()  # XXX: change attribute to match the model
+    if {{ object_name_singular }}_existing:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="{{ object_name_singular | capitalize }} already exists.")
+
+    {{ object_name_singular }}_db = {{ object_name_singular | capitalize }}.model_validate({{ object_name_singular }}_in)
+    session.add({{ object_name_singular }}_db)
+    session.commit()
+    session.refresh({{ object_name_singular }}_db)
+    return {{ object_name_singular }}_db
+    {% else -%}
     # raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="{{ object_name_singular | capitalize }} already exists.")
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Route no implemented.")
+    {% endif %}
 
-
-@router.get("/{{ "{" ~ object_name_singular }}_id}", responses={**responses.http_404_not_found}, response_model={{ object_name_singular | capitalize }}Public)
-async def get_{{ object_name_singular }}({{ object_name_singular }}_id: int) -> {{ object_name_singular | capitalize }}:
+@router.get("/{{ "{" ~ object_name_singular }}_id}", response_model={{ object_name_singular | capitalize }}Public, responses={**responses.http_404_not_found})
+def get_{{ object_name_singular }}({% if use_database %}session: SessionDep, {% endif %}{{ object_name_singular }}_id: int) -> {{ object_name_singular | capitalize }}:
     """Get a {{ object_name_singular }}."""
+    {% if use_database -%}
+    try:
+        {{ object_name_singular }} = session.exec(select({{ object_name_singular | capitalize }}).where({{ object_name_singular | capitalize }}.id == {{ object_name_singular }}_id)).one()
+    except sqlalchemy_exceptions.NoResultFound as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="{{ object_name_singular | capitalize }} not found.") from exc
+    except sqlalchemy_exceptions.MultipleResultsFound as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Multiple {{ object_name_plural }} found.") from exc
+    return {{ object_name_singular }}
+    {% else -%}
     # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="{{ object_name_singular | capitalize }} not found.")
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Route no implemented.")
+    {% endif %}
 
-
-@router.put("/{{ "{" ~ object_name_singular }}_id}", status_code=status.HTTP_200_OK, response_model={{ object_name_singular | capitalize }}Public,
-            responses={**responses.http_404_not_found})
-async def update_{{ object_name_singular }}({{ object_name_singular }}_id: int, {{ object_name_singular }}: {{ object_name_singular | capitalize }}Update) -> {{ object_name_singular | capitalize }}:
+@router.put("/{{ "{" ~ object_name_singular }}_id}", response_model={{ object_name_singular | capitalize }}Public, responses={**responses.http_404_not_found})
+def update_{{ object_name_singular }}({% if use_database %}session: SessionDep, {% endif %}{{ object_name_singular }}_id: int, {{ object_name_singular }}_in: {{ object_name_singular | capitalize }}Update) -> {{ object_name_singular | capitalize }}:
     """Update a {{ object_name_singular }}."""
+    {% if use_database -%}
+    {{ object_name_singular }}_db = get_{{ object_name_singular }}(session, {{ object_name_singular }}_id)
+    update_dict = {{ object_name_singular }}_in.model_dump()
+    {{ object_name_singular }}_db.sqlmodel_update(update_dict)
+    session.add({{ object_name_singular }}_db)
+    session.commit()
+    session.refresh({{ object_name_singular }}_db)
+    return {{ object_name_singular }}_db
+    {% else -%}
     # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="{{ object_name_singular | capitalize }} not found.")
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Route no implemented.")
+    {% endif %}
 
-
-@router.delete("/{{ "{" ~ object_name_singular }}_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None,
-               responses={**responses.http_404_not_found})
-async def delete_{{ object_name_singular }}({{ object_name_singular }}_id: int) -> int:
+@router.delete("/{{ "{" ~ object_name_singular }}_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None, responses={**responses.http_404_not_found})
+def delete_{{ object_name_singular }}({% if use_database %}session: SessionDep, {% endif %}{{ object_name_singular }}_id: int) -> int:
     """Delete a {{ object_name_singular }}."""
+    {% if use_database -%}
+    {{ object_name_singular }}_db = get_{{ object_name_singular }}(session, {{ object_name_singular }}_id)
+    session.delete({{ object_name_singular }}_db)
+    session.commit()
+    return status.HTTP_204_NO_CONTENT
+    {% else -%}
     # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="{{ object_name_singular | capitalize }} not found.")
     # return status.HTTP_204_NO_CONTENT
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Route no implemented.")
+    {% endif %}
