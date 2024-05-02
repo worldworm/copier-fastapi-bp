@@ -27,3 +27,8 @@ class {{ object_name_singular | capitalize }}({{ object_name_singular | capitali
 
 class {{ object_name_singular | capitalize }}Public({{ object_name_singular | capitalize }}Base):
     """Public {{ object_name_singular | capitalize }} class."""
+
+
+class {{ object_name_plural | capitalize }}Public(BaseModel):
+    """Public {{ object_name_plural | capitalize }} class."""
+    data: list[{{ object_name_singular | capitalize }}Public]
