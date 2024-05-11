@@ -4,27 +4,24 @@ from sqlalchemy import exc as sqlalchemy_exceptions
 from sqlmodel import func, select
 from ...database import SessionDep
 {% endif -%}
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 from ...models import responses
+from ...models.pagination import Pagination{% if not use_database %}  # pylint: disable=unused-import{% endif %}
 from ...models.{{ object_name_singular }} import {{ object_name_singular | capitalize }}, {{ object_name_singular | capitalize }}Create, {{ object_name_singular | capitalize }}Public, {{ object_name_plural | capitalize }}Public, {{ object_name_singular | capitalize }}Update
 
 router = APIRouter(prefix="/{{ object_name_plural }}", tags=["{{ object_name_singular | capitalize }}"])
 
 
-@router.get("/", response_model={{ object_name_plural | capitalize }}Public,
-            responses={status.HTTP_200_OK: {"model": {{ object_name_plural | capitalize }}Public,
-                                            "description": "List of {{ object_name_plural }}.", "headers": responses.header_total_count}})
-def get_{{ object_name_plural }}({% if use_database %}session: SessionDep, {% endif %}response: Response,
-                        page: int = Query(default=0, ge=0), limit: int = Query(default=100, gt=0)) -> {{ object_name_plural | capitalize }}Public:
+@router.get("/", response_model={{ object_name_plural | capitalize }}Public)
+def get_{{ object_name_plural }}({% if use_database %}session: SessionDep, {% endif %}page: int = Query(default=0, ge=0), size: int = Query(default=100, gt=0)) -> {{ object_name_plural | capitalize }}Public:
     """Get all {{ object_name_plural }}."""
     {% if use_database -%}
-    count = session.exec(select(func.count()).select_from({{ object_name_singular | capitalize }})).one()  # pylint: disable=not-callable
-    response.headers["X-Total-Count"] = str(count)
-    {{ object_name_plural }} = session.exec(select({{ object_name_singular | capitalize }})).all()
-    return {{ object_name_plural | capitalize }}Public(data={{ object_name_plural }})
+    total_count = session.exec(select(func.count()).select_from({{ object_name_singular | capitalize }})).one()  # pylint: disable=not-callable
+    {{ object_name_plural }} = session.exec(select({{ object_name_singular | capitalize }}).offset(page * size).limit(size)).all()
+    return {{ object_name_plural | capitalize }}Public(data={{ object_name_plural }}, pagination=Pagination(page=page, size=size, total_count=total_count))
     {% else -%}
-    # response.headers["X-Total-Count"] = "0"
+    # return {{ object_name_plural | capitalize }}Public(data={{ object_name_plural }}, pagination=Pagination(page=page, size=size, total_count=total_count))
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Route no implemented.")
     {% endif %}
 

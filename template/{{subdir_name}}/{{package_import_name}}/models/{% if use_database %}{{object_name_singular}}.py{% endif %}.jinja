@@ -5,6 +5,8 @@ from pydantic import EmailStr
 {% endif -%}
 from sqlmodel import {% if add_example_model %}AutoString, {% endif %}Field, SQLModel
 
+from .pagination import Pagination
+
 
 class {{ object_name_singular | capitalize }}Base(SQLModel):
     """BaseModel {{ object_name_singular | capitalize }} class."""
@@ -34,3 +36,4 @@ class {{ object_name_singular | capitalize }}Public({{ object_name_singular | ca
 class {{ object_name_plural | capitalize }}Public(SQLModel):
     """Public {{ object_name_plural | capitalize }} class."""
     data: list[{{ object_name_singular | capitalize }}Public]
+    pagination: Pagination = Field(schema_extra={"examples": [{"page": 0, "size": 100, "last_page": 1, "total_pages": 2, "total_count": 200}]})
