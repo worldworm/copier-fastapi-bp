@@ -23,11 +23,13 @@ def get_{{ object_name_plural }}({% if use_database %}session: SessionDep, {% en
     {% if use_database -%}
     filter_clauses = [f.clause({{ object_name_singular | capitalize }}) for f in filter]
     total_count = session.exec(select(func.count()).select_from({{ object_name_singular | capitalize }})).one()  # pylint: disable=not-callable
+    result_count = session.exec(select(func.count()).select_from({{ object_name_singular | capitalize }})  # pylint: disable=not-callable
+                                .where(and_(*filter_clauses))).one()
     {{ object_name_plural }} = session.exec(select({{ object_name_singular | capitalize }}).offset(page * size).limit(size)
                                                    .order_by(sort.clause()).where(and_(*filter_clauses))).all()
-    return {{ object_name_plural | capitalize }}Public(data={{ object_name_plural }}, pagination=Pagination(page=page, size=size, total_count=total_count))
+    return {{ object_name_plural | capitalize }}Public(data={{ object_name_plural }}, pagination=Pagination(page=page, size=size, result_count=result_count, total_count=total_count))
     {% else -%}
-    # return {{ object_name_plural | capitalize }}Public(data={{ object_name_plural }}, pagination=Pagination(page=page, size=size, total_count=total_count))
+    # return {{ object_name_plural | capitalize }}Public(data={{ object_name_plural }}, pagination=Pagination(page=page, size=size, result_count=result_count, total_count=total_count))
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Route no implemented.")
     {% endif %}
 
