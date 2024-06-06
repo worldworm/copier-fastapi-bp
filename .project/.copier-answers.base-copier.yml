@@ -1,0 +1,22 @@
+# Changes here will be overwritten by Copier
+_commit: v1.2.0
+_src_path: https://github.com/worldworm/copier-base-copier.git
+bp_template_name: copier-fastapi
+bp_template_url: https://github.com/worldworm/copier-fastapi
+copier_version: '9'
+copyright_license: MIT
+copyright_year_start: 2023
+copyright_year_today: 2024
+is_bp: true
+is_ext: false
+is_meta: false
+need_trust: false
+project_description: Copier blueprint template for fastapi projects.
+project_emoji: 📋
+project_name: copier-fastapi-bp
+ref_tech_url: https://github.com/tiangolo/fastapi
+repository_name: copier-fastapi-bp
+repository_provider: GitHub
+repository_url: https://github.com/worldworm/copier-fastapi-bp
+repository_username: worldworm
+warning_early_dev: false
