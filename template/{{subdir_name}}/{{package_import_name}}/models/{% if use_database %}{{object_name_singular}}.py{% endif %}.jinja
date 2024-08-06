@@ -26,7 +26,7 @@ class {{ object_name_singular | capitalize }}Update({{ object_name_singular | ca
 
 class {{ object_name_singular | capitalize }}({{ object_name_singular | capitalize }}Base, table=True):
     """{{ object_name_singular | capitalize }} class."""
-    id: Optional[int] = Field(default=None, primary_key=True, schema_extra={"examples": ["1"]})
+    id: int = Field(default=None, primary_key=True, schema_extra={"examples": ["1"]})
 
 
 class {{ object_name_singular | capitalize }}Public({{ object_name_singular | capitalize }}Base):
