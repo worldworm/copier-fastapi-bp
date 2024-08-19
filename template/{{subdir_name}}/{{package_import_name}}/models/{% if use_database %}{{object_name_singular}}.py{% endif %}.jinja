@@ -3,10 +3,12 @@ from typing import Optional
 {% if add_example_model %}
 from pydantic import EmailStr
 {% endif -%}
-from sqlmodel import {% if add_example_model %}AutoString, {% endif %}Field, SQLModel
+from sqlmodel import {% if add_example_model %}AutoString, {% endif %}Field{% if add_relational_model %}, Relationship{% endif %}, SQLModel
 
 from .pagination import Pagination
-
+{% if add_relational_model -%}
+from .{{ relational_model_name }} import {{ relational_model_name | capitalize }}, {{ relational_model_name | capitalize }}Base
+{% endif %}
 
 class {{ object_name_singular | capitalize }}Base(SQLModel):
     """BaseModel {{ object_name_singular | capitalize }} class."""
@@ -14,8 +16,10 @@ class {{ object_name_singular | capitalize }}Base(SQLModel):
     name: str = Field(schema_extra={"examples": ["Example name"]})
     description: Optional[str] = Field(default=None, schema_extra={"examples": ["Example description"]})
     email: EmailStr = Field(sa_type=AutoString, unique=True, schema_extra={"examples": ["test@example.com"]})
+    {% if add_relational_model -%}
+    {{ relational_model_name }}: {{ relational_model_name | capitalize }}Base
 {% endif %}
-
+{% endif %}
 class {{ object_name_singular | capitalize }}Create({{ object_name_singular | capitalize }}Base):
     """Create {{ object_name_singular | capitalize }} class."""
 
@@ -27,7 +31,10 @@ class {{ object_name_singular | capitalize }}Update({{ object_name_singular | ca
 class {{ object_name_singular | capitalize }}({{ object_name_singular | capitalize }}Base, table=True):
     """{{ object_name_singular | capitalize }} class."""
     id: int = Field(default=None, primary_key=True, schema_extra={"examples": ["1"]})
-
+    {% if add_relational_model -%}
+    {{ relational_model_name }}_id: int = Field(foreign_key="{{ relational_model_name }}.id")
+    {{ relational_model_name }}: {{ relational_model_name | capitalize }} = Relationship(back_populates="{{ object_name_plural }}")
+{% endif %}
 
 class {{ object_name_singular | capitalize }}Public({{ object_name_singular | capitalize }}Base):
     """Public {{ object_name_singular | capitalize }} class."""

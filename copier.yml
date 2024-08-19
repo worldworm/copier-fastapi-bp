@@ -33,3 +33,13 @@ use_database:
 add_example_model:
   type: bool
   help: Add example model?
+
+add_relational_model:
+  type: bool
+  help: Add relational model?
+  when: "{{ add_example_model and use_database }}"
+
+relational_model_name:
+  type: str
+  help: Relational model name (singular)
+  when: "{{ add_relational_model }}"

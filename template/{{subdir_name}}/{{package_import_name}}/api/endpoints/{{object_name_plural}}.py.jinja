@@ -10,6 +10,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from ...models import responses
 from ...models.pagination import Pagination{% if not use_database %}  # pylint: disable=unused-import{% endif %}
 from ...models.{{ object_name_singular }} import {{ object_name_singular | capitalize }}, {{ object_name_singular | capitalize }}Create, {{ object_name_singular | capitalize }}Public, {{ object_name_plural | capitalize }}Public, {{ object_name_singular | capitalize }}Update
+{% if add_relational_model -%}
+from ...models.{{ relational_model_name }} import {{ relational_model_name | capitalize }}
+{% endif %}
 from ..utils.filtering import FilterBy, parse_filter
 from ..utils.sorting import SortBy, parse_sort
 
@@ -18,14 +21,14 @@ router = APIRouter(prefix="/{{ object_name_plural }}", tags=["{{ object_name_sin
 
 @router.get("/", response_model={{ object_name_plural | capitalize }}Public)
 def get_{{ object_name_plural }}({% if use_database %}session: SessionDep, {% endif %}page: int = Query(default=0, ge=0), size: int = Query(default=100, gt=0),
-                            sort: SortBy = Depends(parse_sort({{ object_name_singular | capitalize }})), filter: list[FilterBy] = Depends(parse_filter({{ object_name_singular | capitalize }}))) -> {{ object_name_plural | capitalize }}Public:  # pylint: disable=redefined-builtin
+                            sort: SortBy = Depends(parse_sort({{ object_name_singular | capitalize }}{% if add_relational_model %}, [{{ relational_model_name | capitalize }}]{% endif %})), filter: list[FilterBy] = Depends(parse_filter({{ object_name_singular | capitalize }}))) -> {{ object_name_plural | capitalize }}Public:  # pylint: disable=redefined-builtin
     """Get all {{ object_name_plural }}."""
     {% if use_database -%}
-    filter_clauses = [f.clause({{ object_name_singular | capitalize }}) for f in filter]
+    filter_clauses = [f.clause({{ object_name_singular | capitalize }}{% if add_relational_model %}, [{{ relational_model_name | capitalize }}]{% endif %}) for f in filter]
     total_count = session.exec(select(func.count()).select_from({{ object_name_singular | capitalize }})).one()  # pylint: disable=not-callable
-    result_count = session.exec(select(func.count()).select_from({{ object_name_singular | capitalize }})  # pylint: disable=not-callable
+    result_count = session.exec(select(func.count()).select_from({{ object_name_singular | capitalize }}){% if add_relational_model %}.join({{ relational_model_name | capitalize }}){% endif %}  # pylint: disable=not-callable
                                 .where(and_(*filter_clauses))).one()
-    {{ object_name_plural }} = session.exec(select({{ object_name_singular | capitalize }}).offset(page * size).limit(size)
+    {{ object_name_plural }} = session.exec(select({{ object_name_singular | capitalize }}){% if add_relational_model %}.join({{ relational_model_name | capitalize }}){% endif %}.offset(page * size).limit(size)
                                                    .order_by(sort.clause()).where(and_(*filter_clauses))).all()
     return {{ object_name_plural | capitalize }}Public(data={{ object_name_plural }}, pagination=Pagination(page=page, size=size, result_count=result_count, total_count=total_count))
     {% else -%}
